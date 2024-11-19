@@ -1,5 +1,5 @@
 import React from "react";
-import Form from "../form";
+import { SignUpForm } from "../form";
 
 const SignUp = () => {
   return (
@@ -20,7 +20,7 @@ const SignUp = () => {
         <div className="divider lg:divider-horizontal">OR</div>
 
         <div className="card p-5 min-h-32 min-w-[18.75rem] grid place-items-center">
-          <Form />
+          <SignUpForm />
         </div>
       </div>
     </>
