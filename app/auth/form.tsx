@@ -1,8 +1,10 @@
 "use client";
-import { MoveRight, ShieldAlert } from "lucide-react";
+import { MoveRight } from "lucide-react";
 import Image from "next/image";
 import { NextResponse } from "next/server";
 import React, { FormEvent, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface SignUpResponse extends NextResponse {
   message: string;
@@ -23,15 +25,14 @@ interface LogInResponse extends NextResponse {
 const LogInForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [formErrors, setFormErrors] = useState<{
     email?: string;
     password?: string[];
   } | null>(null);
+  const { toast } = useToast();
 
   const handleForm = async (e: FormEvent) => {
     e.preventDefault();
-    setMessage("");
     setFormErrors(null);
 
     const request = await fetch("/api/auth/login", {
@@ -43,13 +44,20 @@ const LogInForm = () => {
     const response: LogInResponse = await request.json();
     if (!request.ok) {
       if (response.message) {
-        setMessage(response.message);
+        toast({
+          description: response.message,
+          variant: "destructive",
+        });
       } else {
         setFormErrors(response.error!);
       }
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: response.message,
+        variant: "success",
+      });
     }
-
-    // Redirect and Send Notification
   };
 
   return (
@@ -116,12 +124,6 @@ const LogInForm = () => {
           </div>
         )}
       </label>
-      {message && (
-        <div role="alert" className="alert alert-error mb-2 text-white">
-          <ShieldAlert />
-          <span>{message}</span>
-        </div>
-      )}
       <button type="submit" className="btn btn-primary w-full text-lg">
         Log In <MoveRight />
       </button>
@@ -133,16 +135,16 @@ const SignUpForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [formErrors, setFormErrors] = useState<{
     name?: string;
     email?: string;
     password?: string[];
   } | null>(null);
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleForm = async (e: FormEvent) => {
     e.preventDefault();
-    setMessage("");
     setFormErrors(null);
 
     const request = await fetch("/api/auth/signup", {
@@ -154,13 +156,21 @@ const SignUpForm = () => {
     const response: SignUpResponse = await request.json();
     if (!request.ok) {
       if (response.message) {
-        setMessage(response.message);
+        toast({
+          description: response.message,
+          variant: "destructive",
+        });
       } else {
         setFormErrors(response.error!);
       }
+    } else {
+      router.push("/auth/login");
+      toast({
+        title: "Please log in to continue!",
+        description: response.message,
+        variant: "success",
+      });
     }
-
-    // Redirect and Send Notification
   };
 
   return (
@@ -254,12 +264,6 @@ const SignUpForm = () => {
           </div>
         )}
       </label>
-      {message && (
-        <div role="alert" className="alert alert-error mb-2 text-white">
-          <ShieldAlert />
-          <span>{message}</span>
-        </div>
-      )}
       <button type="submit" className="btn btn-primary w-full text-lg">
         Continue <MoveRight />
       </button>

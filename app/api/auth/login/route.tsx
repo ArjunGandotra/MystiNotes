@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import dbConnect from "@/app/lib/dbConnect";
+import dbConnect from "@/lib/dbConnect";
 import User from "@/app/models/User";
 
 interface LoginBody {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { message: "Email and password are required" },
         { status: 400 }
       );
     }
@@ -69,12 +69,15 @@ export async function POST(request: NextRequest) {
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 400 });
+      return NextResponse.json({ message: "User not found" }, { status: 400 });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return NextResponse.json({ error: "Invalid password!" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid password!" },
+        { status: 400 }
+      );
     }
 
     const payload: { user: { id: string; email: string } } = {
@@ -88,12 +91,15 @@ export async function POST(request: NextRequest) {
       expiresIn: "4h",
     });
 
-    localStorage.setItem("token", token);
-
-    return NextResponse.json(
+    const response = NextResponse.json(
       { message: "Log In Successful!" },
       { status: 200 }
     );
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      maxAge: 4 * 60 * 60,
+    });
+    return response;
   } catch (error) {
     console.log(error);
     return NextResponse.json(
