@@ -30,6 +30,7 @@ const LogInForm = () => {
     password?: string[];
   } | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleForm = async (e: FormEvent) => {
     e.preventDefault();
@@ -52,6 +53,7 @@ const LogInForm = () => {
         setFormErrors(response.error!);
       }
     } else {
+      router.push("/dashboard");
       toast({
         title: "Welcome back!",
         description: response.message,
